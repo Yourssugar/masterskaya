@@ -61,8 +61,15 @@ a { color: inherit; }
 .map-mini { display: block; width: 44px; height: 44px; flex: none; border-radius: 11px; box-shadow: 0 4px 14px rgba(0, 0, 0, .45); transition: transform .2s; }
 .map-mini svg { display: block; width: 100%; height: 100%; }
 .map-mini:hover { transform: translateY(-1px) rotate(-3deg); }
-.top-link { text-decoration: none; font-weight: 500; color: var(--muted); }
-.top-link:hover, .top-link[aria-current] { color: var(--cream); }
+.nav-btn {
+  display: inline-flex; align-items: center; min-height: 40px; padding: 0 18px; border-radius: 999px;
+  text-decoration: none; font: 600 14px/1 var(--sans); color: var(--cream);
+  background: rgba(184, 50, 90, .16); border: 1px solid rgba(184, 50, 90, .65);
+  transition: background .2s, border-color .2s;
+}
+.nav-btn:hover { background: rgba(184, 50, 90, .32); border-color: var(--thread); }
+.nav-btn[aria-current] { background: var(--thread); border-color: var(--thread); color: #fff; }
+.nav-btn .short { display: none; }
 .replay svg { width: 16px; height: 16px; margin: 0 6px 0 -4px; }
 .brand { text-decoration: none; display: flex; flex-direction: column; line-height: 1; }
 .brand-name { font: 600 28px/1 var(--serif); letter-spacing: .01em; }
@@ -174,11 +181,15 @@ a { color: inherit; }
   .lead { font-size: 16px; }
   .top-contact { display: none; }
   .top { padding: 16px 16px; }
-  .top-left { gap: 10px; }
-  .brand-name { font-size: 24px; }
-  .top-actions { gap: 12px; }
-  .top-link { font-size: 14px; }
-  .replay { width: 44px; padding: 0; }
+  .top-left { gap: 8px; }
+  .map-mini { width: 40px; height: 40px; }
+  .brand-name { font-size: 22px; }
+  .brand-place { font-size: 9px; letter-spacing: .16em; }
+  .top-actions { gap: 6px; }
+  .nav-btn { min-height: 36px; padding: 0 11px; font-size: 13px; }
+  .nav-btn .full { display: none; }
+  .nav-btn .short { display: inline; }
+  .replay { width: 36px; min-height: 36px; padding: 0; }
   .replay span { display: none; }
   .replay svg { margin: 0; }
   .phrase { top: 25vh; left: 7vw !important; right: 7vw !important; max-width: none; text-align: center; font-size: clamp(26px, 7.4vw, 34px); }

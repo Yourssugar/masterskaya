@@ -1,0 +1,75 @@
+/* Страница цен: блокнот на столе (компьютер) или лист в клетку (телефон) */
+
+.prices-page { background: var(--bg); }
+#scene { position: fixed; inset: 0; width: 100%; height: 100%; display: none; }
+.book #scene { display: block; }
+.page .top { background: linear-gradient(180deg, rgba(10, 8, 7, .85), rgba(10, 8, 7, 0)); }
+
+/* ---------- управление блокнотом ---------- */
+.book-ui { display: none; }
+.book .book-ui { display: block; }
+.pager {
+  position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 4;
+  display: flex; align-items: center; gap: 14px;
+  padding: 6px; border-radius: 999px; background: rgba(14, 12, 11, .7); border: 1px solid rgba(241, 233, 220, .15);
+  backdrop-filter: blur(8px);
+}
+.pager-btn {
+  width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer;
+  background: rgba(241, 233, 220, .1); color: var(--cream); font: 600 18px/1 var(--sans);
+}
+.pager-btn:hover:not(:disabled) { background: rgba(241, 233, 220, .22); }
+.pager-btn:disabled { opacity: .3; cursor: default; }
+.pager-page { min-width: 70px; text-align: center; font-size: 14px; color: var(--muted); }
+.as-text { position: fixed; right: max(4vw, 20px); bottom: 26px; z-index: 4; }
+.turn-hint {
+  position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%); z-index: 4; margin: 0;
+  font-size: 13px; color: var(--muted); opacity: 0; transition: opacity .6s;
+  pointer-events: none; white-space: nowrap;
+}
+.opened .turn-hint { opacity: .8; }
+
+/* ---------- список: лист в клетку ---------- */
+.price-list { padding: 104px 16px 60px; }
+.book .price-list { display: none; }
+.book.show-list .price-list {
+  display: block; position: fixed; inset: 0; z-index: 3; overflow-y: auto;
+  background: rgba(10, 8, 7, .78); backdrop-filter: blur(4px);
+}
+.sheet {
+  max-width: 620px; margin: 0 auto; padding: 34px 28px 30px 44px;
+  color: #1f2b4d; font-family: 'Caveat', cursive;
+  background-color: #f2ead8;
+  background-image:
+    linear-gradient(90deg, transparent 30px, rgba(190, 60, 70, .35) 30px, rgba(190, 60, 70, .35) 32px, transparent 32px),
+    linear-gradient(rgba(70, 110, 150, .14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(70, 110, 150, .14) 1px, transparent 1px);
+  background-size: 100% 100%, 22px 22px, 22px 22px;
+  border-radius: 4px; box-shadow: 0 24px 60px rgba(0, 0, 0, .6);
+}
+.sheet h1 { margin: 0 0 8px; font: 700 64px/1 'Caveat', cursive; }
+.sheet h2 { margin: 26px 0 6px; font: 700 36px/1.1 'Caveat', cursive; text-decoration: underline wavy rgba(58, 58, 66, .5); text-underline-offset: 6px; }
+.sheet ul { list-style: none; margin: 0; padding: 0; }
+.sheet li { font-size: 25px; line-height: 1.15; padding: 4px 0; }
+.p-row { display: flex; align-items: baseline; gap: 6px; }
+.p-name { flex: 0 1 auto; }
+.p-dots { flex: 1 1 20px; border-bottom: 3px dotted rgba(31, 43, 77, .4); transform: translateY(-5px); }
+.p-price { flex: none; font-weight: 700; }
+.p-note { display: block; font-size: 20px; opacity: .7; padding-left: 14px; }
+.p-strike { opacity: .75; }
+.p-strike s { text-decoration-color: rgba(58, 58, 66, .75); text-decoration-thickness: 2px; }
+.p-text { font-size: 22px; opacity: .85; }
+.p-intro { margin: 0; font-size: 25px; line-height: 1.2; }
+.p-outro { margin: 0; font-size: 26px; font-weight: 600; line-height: 1.2; }
+.p-outro.first { margin-top: 28px; }
+.sheet .actions { margin-top: 22px; font-family: var(--sans); }
+.sheet .btn-ghost { color: #1f2b4d; border-color: rgba(31, 43, 77, .45); background: rgba(255, 255, 255, .35); backdrop-filter: none; }
+.sheet .btn-ghost:hover { border-color: #1f2b4d; }
+.show-list .pager, .show-list .turn-hint { display: none; }
+
+@media (max-aspect-ratio: 4/5) {
+  .price-list { padding-top: 84px; }
+  .sheet { padding: 26px 18px 24px 40px; }
+  .sheet h1 { font-size: 54px; }
+  .sheet li { font-size: 23px; }
+}
