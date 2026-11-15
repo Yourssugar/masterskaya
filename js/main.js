@@ -36,7 +36,7 @@ function layout(W, H, k) {
     s += (s * 0.84 - s) * k; cx += (W * 0.72 - cx) * k;
   } else {
     s = Math.min(W * 0.96, H * 0.5); cx = W * 0.5; base = H * 0.76;
-    s += (s * 0.5 - s) * k; base += (H * 0.36 - base) * k;
+    s += (s * 0.55 - s) * k; base += (H * 0.9 - base) * k;
   }
   return { x: cx - s / 2, y: base - s * (1700 / 2048), w: s, h: s };
 }
@@ -54,7 +54,7 @@ let stage = null;
 try { stage = createStage(canvas, quality); } catch (e) { console.warn(e); }
 if (!stage) document.body.classList.add('nogl');
 
-const home = createHome({ stage, site: SITE, url, forced: Q.get('t'), els: { status: $('status'), cssbg: $('cssbg') } });
+const home = createHome({ stage, site: SITE, url, forced: Q.get('t'), calm: RM, els: { status: $('status'), cssbg: $('cssbg'), fx: $('homefx') } });
 
 const els = {
   root: $('intro'), svg: $('thread'), props: $('props'), phrases: $('phrases'),
@@ -69,7 +69,8 @@ function markSeen() { try { localStorage.setItem(KEY, INTRO_VERSION); } catch (e
 const intro = stage ? createIntro({
   stage, url, layout, els,
   homeBg: () => home.bg(),
-  onEnd() { markSeen(); home.activate(); }
+  onEnd() { markSeen(); home.activate(true); },
+  onPeek() { home.peek(); }
 }) : null;
 
 async function play(at = 0) {

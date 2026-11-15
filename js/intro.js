@@ -31,6 +31,7 @@ const T = {
   draw: [0.15, 2.3],     // нить рисует контур
   drawOut: [2.5, 3.3],
   zoomIn: [11.9, 12.9], zoomOut: [15.6, 16.7],
+  peek: 16.6,
   tear: [12.15, 13.35],
   repair: [13.55, 15.25],
   snip: [15.2, 15.7],
@@ -48,7 +49,7 @@ const easeOut = x => 1 - Math.pow(1 - x, 3);
 const lerp = (a, b, k) => a + (b - a) * k;
 const NS = 'http://www.w3.org/2000/svg';
 
-export function createIntro({ stage, url, homeBg, layout, els, onEnd }) {
+export function createIntro({ stage, url, homeBg, layout, els, onEnd, onPeek }) {
   const S = stage.S;
   let t = 0, running = false, prepared = null;
   let bags = [], shapes = [], contour = [], tear = null, stitches = [], maskTex = null;
@@ -352,6 +353,7 @@ export function createIntro({ stage, url, homeBg, layout, els, onEnd }) {
     update(dt, mouse) {
       if (!running) return;
       t += dt;
+      if (t >= T.peek && onPeek) onPeek();
       if (t >= DUR) {
         running = false;
         els.root.hidden = true;

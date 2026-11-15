@@ -26,6 +26,8 @@ RULES = [
     (lambda p: "scissors-blade" in p or "wheel" in p, 1024, 512),
     (lambda p: p.endswith("needle"), 1400, 700),
     (lambda p: p.startswith("preview/props/"), 900, 500),
+    (lambda p: p.startswith("home/") and any(k in p for k in ("spool", "pincushion", "chalk", "hardware", "glasses", "spoon", "clock", "tape-hanging")), 600, 340),
+    (lambda p: p.startswith("home/") and "wheel" not in p and "scissors-blade" not in p, 1000, 560),
     (lambda p: True, 1400, 700),
 ]
 

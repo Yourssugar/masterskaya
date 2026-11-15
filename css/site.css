@@ -34,6 +34,23 @@ a { color: inherit; }
 }
 .in-intro .shade { opacity: 0; }
 
+/* ---------- часы и календарь на столе ---------- */
+#homefx { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+#homefx[hidden] { display: none; }
+.clockface, .calpage { position: absolute; left: 0; top: 0; opacity: 0; will-change: transform; }
+.clockface svg { display: block; width: 100%; height: 100%; padding: 12% 6%; box-sizing: border-box; overflow: visible; }
+.clockface line { stroke: rgba(255, 96, 48, .07); stroke-width: 6.5; stroke-linecap: round; }
+.clockface line.on { stroke: #ff6a3d; filter: drop-shadow(0 0 3px rgba(255, 90, 40, .9)); }
+.clockface .colon circle { fill: #ff6a3d; filter: drop-shadow(0 0 3px rgba(255, 90, 40, .9)); }
+.calpage {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: #2a211b; text-align: center; font-family: var(--serif); line-height: 1.05;
+}
+.calpage b { font-weight: 600; font-size: 4.6em; line-height: .9; }
+.calpage .m { font-size: 1.35em; font-weight: 600; }
+.calpage .w { font-size: 1.05em; font-style: italic; margin-top: .15em; color: #5a4a3e; }
+.calpage .h { font: 500 .78em/1.35 var(--sans); margin-top: .9em; color: #4a3d33; letter-spacing: .02em; }
+
 /* ---------- шапка ---------- */
 .top {
   position: fixed; top: 0; left: 0; right: 0; z-index: 5;
@@ -122,8 +139,13 @@ a { color: inherit; }
 
 /* ---------- телефон ---------- */
 @media (max-aspect-ratio: 4/5) {
-  .shade { background: linear-gradient(0deg, rgba(8, 6, 5, .85) 0%, rgba(8, 6, 5, .5) 42%, rgba(8, 6, 5, 0) 70%); }
-  #home { align-items: flex-end; padding: 100px 20px 40px; }
+  .shade { background: linear-gradient(180deg, rgba(8, 6, 5, .82) 0%, rgba(8, 6, 5, .55) 42%, rgba(8, 6, 5, 0) 66%); }
+  #home { align-items: flex-start; padding: 88px 20px 40px; }
+  .hero h1 em { margin-top: .12em; }
+  .lead { margin-top: 14px; }
+  .status { margin-top: 14px; }
+  .actions { margin-top: 16px; }
+  .addr { margin-top: 14px; font-size: 14px; }
   .hero h1 { font-size: clamp(48px, 15vw, 72px); }
   .lead { font-size: 16px; }
   .top-phone { display: none; }
