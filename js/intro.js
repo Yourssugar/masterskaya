@@ -30,6 +30,7 @@ const T = {
   dark: [0.6, 2.6],      // фон проявляется из темноты
   draw: [0.15, 2.3],     // нить рисует контур
   drawOut: [2.5, 3.3],
+  zoomIn: [11.9, 12.9], zoomOut: [15.6, 16.7],
   tear: [12.15, 13.35],
   repair: [13.55, 15.25],
   snip: [15.2, 15.7],
@@ -117,14 +118,14 @@ export function createIntro({ stage, url, homeBg, layout, els, onEnd }) {
     stitchG.textContent = '';
     stitches = tear.segs.map((g, idx) => {
       const len = Math.hypot(g.b[0] - g.a[0], g.b[1] - g.a[1]);
-      const count = clamp(Math.round(len / 0.022), 4, 16);
+      const count = clamp(Math.round(len / 0.014), 4, 18);
       const nx = -g.dir[1], ny = g.dir[0];
-      const w = clamp(g.w * 1.1, 0.02, 0.034);
+      const w = clamp(g.w * 1.25, 0.012, 0.026);
       const list = [];
       for (let i = 0; i < count; i++) {
         const k = (i + .5) / count;
         const cx = lerp(g.a[0], g.b[0], k), cy = lerp(g.a[1], g.b[1], k);
-        const sx = g.dir[0] * 0.006, sy = g.dir[1] * 0.006;
+        const sx = g.dir[0] * 0.004, sy = g.dir[1] * 0.004;
         const line = document.createElementNS(NS, 'line');
         line.setAttribute('class', 'stitch');
         stitchG.appendChild(line);
@@ -164,7 +165,16 @@ export function createIntro({ stage, url, homeBg, layout, els, onEnd }) {
   function frame(mouse) {
     const W = innerWidth, H = innerHeight, mob = W / H < 0.8;
     const fk = ease(seg(t, T.final));
-    const r0 = rectAt(fk);
+    let r0 = rectAt(fk);
+    /* наезд камеры на разрыв: сумка растёт вокруг места поломки */
+    const zk = ease(seg(t, T.zoomIn)) * (1 - ease(seg(t, T.zoomOut)));
+    if (zk > 0 && tear) {
+      const Z = 1 + ((mob ? 1.5 : 2.3) - 1) * zk;
+      const f = tear.focus, F = toPx(r0, f);
+      const P = mob ? [W * .5, H * .7] : [W * .44, H * .56];
+      const w = r0.w * Z;
+      r0 = { w, h: w, x: lerp(F[0], P[0], zk) - f[0] * w, y: lerp(F[1], P[1], zk) - f[1] * w };
+    }
     const breathe = 1 + 0.006 * Math.sin(t * 1.3);
     const r = {
       w: r0.w * breathe, h: r0.h * breathe,
@@ -180,7 +190,7 @@ export function createIntro({ stage, url, homeBg, layout, els, onEnd }) {
     S.bgB = homeBg();
     S.bgMix = ease(seg(t, T.bgHome));
     S.dark = 1 - ease(seg(t, T.dark));
-    S.zoom = lerp(1.1, 1.03, easeOut(clamp(t / DUR, 0, 1)));
+    S.zoom = lerp(1.1, 1.03, easeOut(clamp(t / DUR, 0, 1))) + .06 * zk;
     S.off = [mouse.x * -0.006, mouse.y * -0.005];
     S.vig = .6;
     S.dust.amt = .45;
@@ -258,7 +268,7 @@ export function createIntro({ stage, url, homeBg, layout, els, onEnd }) {
           s.el.setAttribute('x1', a[0].toFixed(1)); s.el.setAttribute('y1', a[1].toFixed(1));
           s.el.setAttribute('x2', e[0].toFixed(1)); s.el.setAttribute('y2', e[1].toFixed(1));
           s.el.style.opacity = f > 0 ? fadeSeam : 0;
-          s.el.style.strokeWidth = Math.max(1.5, size * 0.007) + 'px';
+          s.el.style.strokeWidth = Math.max(1.2, size * 0.0035) + 'px';
         });
       });
       const rk = seg(t, T.repair);
@@ -268,7 +278,7 @@ export function createIntro({ stage, url, homeBg, layout, els, onEnd }) {
         const si = Math.min(n - 1, Math.floor(local * n)), f = local * n - si;
         const s = g.list[si];
         const a = toPx(r, s.p1), b = toPx(r, s.p2);
-        placeNeedle(lerp(a[0], b[0], f), lerp(a[1], b[1], f), b[0] - a[0], b[1] - a[1], 1, size * .22);
+        placeNeedle(lerp(a[0], b[0], f), lerp(a[1], b[1], f), b[0] - a[0], b[1] - a[1], 1, size * .15);
         needleOn = 1;
       }
     }
@@ -279,7 +289,7 @@ export function createIntro({ stage, url, homeBg, layout, els, onEnd }) {
     if (stitches.length && sk > 0 && sk < 1) {
       const g = stitches[stitches.length - 1];
       const p = toPx(r, [g.end[0] + g.dir[0] * .05, g.end[1] + g.dir[1] * .05 + .02]);
-      const sz = size * .3, open = 26 * (1 - ease(clamp((sk - .25) / .45, 0, 1)));
+      const sz = size * .2, open = 26 * (1 - ease(clamp((sk - .25) / .45, 0, 1)));
       const op = Math.min(1, sk * 6) * (1 - clamp((sk - .8) / .2, 0, 1));
       els.scissors.style.opacity = op.toFixed(3);
       els.scissors.style.width = els.scissors.style.height = sz + 'px';

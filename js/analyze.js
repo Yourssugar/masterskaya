@@ -147,5 +147,11 @@ export function tearOf(imgA, imgB, n = 192) {
     dir: [g.ax, g.ay],
     w: Math.max(3, g.wmax + 2) / n
   }));
-  return { data, n, segs: out };
+  /* куда наезжать камерой: середина рамки всех повреждений */
+  let fx0 = 1, fy0 = 1, fx1 = 0, fy1 = 0;
+  out.forEach(g => [g.a, g.b].forEach(p => {
+    fx0 = Math.min(fx0, p[0]); fx1 = Math.max(fx1, p[0]); fy0 = Math.min(fy0, p[1]); fy1 = Math.max(fy1, p[1]);
+  }));
+  const focus = out.length ? [(fx0 + fx1) / 2, (fy0 + fy1) / 2] : [.5, .6];
+  return { data, n, segs: out, focus };
 }

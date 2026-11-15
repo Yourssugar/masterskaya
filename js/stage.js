@@ -56,7 +56,7 @@ void main(){
   float v = n * .72 + (1. - vUv.y) * .28;
   float t = mixv * (1. + edgeW * 2.) - edgeW;
   float showB = smoothstep(t + edgeW * .35, t - edgeW * .35, v);
-  float edge = (1. - smoothstep(0., edgeW * .45, abs(v - t))) * step(.001, mixv) * step(mixv, .999);
+  float edge = (1. - smoothstep(0., edgeW * .28, abs(v - t))) * step(.001, mixv) * step(mixv, .999);
 
   vec4 m = texture2D(tM, vUv);
   float mk = m.r * useMask;
@@ -70,7 +70,7 @@ void main(){
   vec4 pa = vec4(a.rgb * a.a, a.a), pb = vec4(b.rgb * b.a, b.a);
   vec4 c = mix(pa, pb, showB);
   float cov = max(a.a, b.a);
-  c.rgb += edgeCol * (edge * .75 + seam * .45) * cov;
+  c.rgb += edgeCol * (edge * .4 + seam * .3) * cov;
   gl_FragColor = c * alpha;
 }`;
 
