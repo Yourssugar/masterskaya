@@ -127,13 +127,14 @@ void main(){
 const SPR_FS = `
 precision mediump float;
 uniform sampler2D t;
-uniform float alpha, add, time, pr, blur;
+uniform float alpha, add, time, pr, blur, clipY;
 uniform vec3 tint, lc;
-uniform vec4 lp, wob;
+uniform vec4 lp, wob, uvr;
 uniform mediump vec2 res;
 varying vec2 vUv;
 void main(){
-  vec2 uv = vUv;
+  vec2 uv = mix(uvr.xy, uvr.zw, vUv);
+  if (uv.y > clipY) discard;
   if (wob.x > 0.) {
     float k = wob.z > .5 ? clamp((uv.y - wob.w) / (1. - wob.w), 0., 1.) : clamp((wob.w - uv.y) / wob.w, 0., 1.);
     k *= k;
@@ -184,7 +185,7 @@ const LIGHT_FS = `
 precision mediump float;
 uniform sampler2D t;
 uniform vec2 s, res, off, shift;
-uniform float zoom, alpha;
+uniform float zoom, alpha, wave, time;
 uniform vec3 col;
 varying vec2 vUv;
 vec2 cover(vec2 uv, vec2 s){
@@ -193,7 +194,10 @@ vec2 cover(vec2 uv, vec2 s){
   return (uv - .5) * k / zoom + .5 + off;
 }
 void main(){
-  float g = texture2D(t, clamp(cover(vUv, s) + shift, .001, .999)).r;
+  vec2 uv = cover(vUv, s) + shift;
+  /* листва за окном колышется: волна по светлым пятнам */
+  uv += vec2(sin(uv.y * 17. + time * 1.1) + sin(uv.y * 6.3 - time * .6) * .6, sin(uv.x * 13. + time * .8)) * wave;
+  float g = texture2D(t, clamp(uv, .001, .999)).r;
   gl_FragColor = vec4(col * g * alpha, 0.);
 }`;
 
@@ -253,7 +257,7 @@ export function createStage(canvas, quality) {
 
   const pot = n => (n & (n - 1)) === 0;
   const potUp = n => Math.min(2048, Math.pow(2, Math.ceil(Math.log2(n))));
-  function texFrom(src, w, h, data, mip) {
+  function texFrom(src, w, h, data, mip, rep) {
     const t = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, t);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
@@ -275,7 +279,7 @@ export function createStage(canvas, quality) {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
     } else gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, rep ? gl.REPEAT : gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     return t;
   }
@@ -284,12 +288,13 @@ export function createStage(canvas, quality) {
   const black = { t: texFrom(null, 1, 1, new Uint8Array([10, 8, 7, 255])), w: 16, h: 9, ready: true };
 
   const cache = new Map();
-  function tex(url, mip) {
+  /* mip: мип-уровни для уменьшенных предметов; rep: повтор по ширине (лента ткани) */
+  function tex(url, mip, rep) {
     if (cache.has(url)) return cache.get(url);
     const rec = { t: null, w: 1, h: 1, ready: false, img: null };
     rec.promise = loadImage(url).then(img => {
       rec.img = img; rec.w = img.naturalWidth; rec.h = img.naturalHeight;
-      rec.t = texFrom(img, 0, 0, null, mip); rec.ready = true;
+      rec.t = texFrom(img, 0, 0, null, mip || rep, rep); rec.ready = true;
       return rec;
     }).catch(err => { console.warn(err.message); rec.failed = true; return rec; });
     cache.set(url, rec);
@@ -310,7 +315,8 @@ export function createStage(canvas, quality) {
     dust: { amt: .5, col: [1, .82, .62] },
     /* главная: световые слои и предметы, рисуются по порядку списка */
     lights: [],
-    items: []
+    items: [],
+    top: []      // поверх сумки превью (летящая ткань)
   };
 
   let W = 1, H = 1, pr = 1, scale = 1;
@@ -361,6 +367,7 @@ export function createStage(canvas, quality) {
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
+    lightTime = time;
     drawLights(false);
     for (const it of S.items) drawItem(it, time);
     drawLights(true);
@@ -392,6 +399,8 @@ export function createStage(canvas, quality) {
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
 
+    for (const it of S.top) drawItem(it, time);
+
     /* пыль */
     if (DUST_N && S.dust.amt > .001) {
       gl.blendFunc(gl.ONE, gl.ONE);
@@ -409,6 +418,7 @@ export function createStage(canvas, quality) {
     }
   }
 
+  let lightTime = 0;
   function drawLights(over) {
     for (const L of S.lights) {
       if (!!L.over !== over || L.alpha <= .001 || !L.tex.ready) continue;
@@ -420,6 +430,8 @@ export function createStage(canvas, quality) {
       gl.uniform2f(lightP.u('shift'), L.shift[0], L.shift[1]);
       gl.uniform1f(lightP.u('zoom'), S.zoom);
       gl.uniform1f(lightP.u('alpha'), L.alpha * (1 - S.dark));
+      gl.uniform1f(lightP.u('wave'), L.wave || 0);
+      gl.uniform1f(lightP.u('time'), lightTime);
       gl.uniform3f(lightP.u('col'), L.col[0], L.col[1], L.col[2]);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
@@ -446,6 +458,9 @@ export function createStage(canvas, quality) {
       gl.uniform4f(sprP.u('wob'), wb[0], wb[1], wb[2], wb[3]);
       gl.uniform1f(sprP.u('add'), it.add ? 1 : 0);
       gl.uniform1f(sprP.u('blur'), it.blur || 0);
+      const uv = it.uvr || [0, 0, 1, 1];
+      gl.uniform4f(sprP.u('uvr'), uv[0], uv[1], uv[2], uv[3]);
+      gl.uniform1f(sprP.u('clipY'), it.clipY == null ? 9 : it.clipY);
       gl.uniform1f(sprP.u('time'), time);
       gl.uniform1f(sprP.u('pr'), pr);
     } else if (prog === glowP) {

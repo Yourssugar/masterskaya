@@ -18,6 +18,11 @@ const ERAS = [
   { t0: 11.5, t1: 12.6, props: ['now-earbuds-case', 'now-keys', 'now-notebook', 'now-sunglasses'] }
 ];
 
+/* мастерская вокруг сумки меняется вместе с эпохой: фон и цвет света */
+const ERA_BG = ['stage-1900', 'stage-1950', 'stage-1970', 'stage'];
+const ERA_LIGHT = [[1, .8, .48], [1, .7, .66], [1, .6, .3], [1, .84, .64]];
+const eraOf = i => Math.max(0, Math.min(3, i));
+
 const PHRASES = [
   { t0: 3.0, t1: 5.4, side: 'l', text: 'Сумки шьют руками больше ста лет' },
   { t0: 6.6, t1: 8.3, side: 'r', text: 'У каждой эпохи своя форма' },
@@ -49,11 +54,15 @@ const easeOut = x => 1 - Math.pow(1 - x, 3);
 const lerp = (a, b, k) => a + (b - a) * k;
 const NS = 'http://www.w3.org/2000/svg';
 
-export function createIntro({ stage, url, homeBg, layout, els, onEnd, onPeek }) {
+export function createIntro({ stage, url, homeBg, layout, els, onEnd, onPeek, transition }) {
+  /* переход между эпохами: 'dissolve' растворение по шуму, 'cloth' пролетает ткань */
+  const CLOTH = transition === 'cloth';
   const S = stage.S;
   let t = 0, running = false, prepared = null;
   let bags = [], shapes = [], contour = [], tear = null, stitches = [], maskTex = null;
   let pathLen = 1, lastW = 0, lastH = 0;
+  const cloth = [null, null];
+  const eraBg = i => stage.tex(url('preview/bg/' + ERA_BG[eraOf(i)], 'bg'));
   const propEls = [], phraseEls = [];
 
   /* ---------- DOM ---------- */
@@ -93,8 +102,11 @@ export function createIntro({ stage, url, homeBg, layout, els, onEnd, onPeek }) 
 
   function prepare() {
     if (prepared) return prepared;
-    const bg = stage.tex(url('preview/bg/stage', 'bg'));
+    const bg = stage.tex(url('preview/bg/' + ERA_BG[0], 'bg'));
     bags = BAGS.map(b => stage.tex(url('preview/bags/' + b, 'bag')));
+    ERA_BG.forEach(n => stage.tex(url('preview/bg/' + n, 'bg')));
+    stage.tex(url('preview/bg/light-key', 'bg'));
+    if (CLOTH) cloth.forEach((c, i) => { cloth[i] = stage.tex(url('preview/fx/cloth-' + (i + 1)), true); });
     const first = Promise.all([bg.promise, bags[0].promise, bags[1].promise]);
     prepared = withTimeout(first, 4000).then(res => {
       if (!res || res.some(r => !r || r.failed)) return false;
@@ -186,10 +198,12 @@ export function createIntro({ stage, url, homeBg, layout, els, onEnd, onPeek }) 
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
     const size = r.w;
 
-    /* фон */
-    S.bgA = stage.tex(url('preview/bg/stage', 'bg'));
-    S.bgB = homeBg();
-    S.bgMix = ease(seg(t, T.bgHome));
+    /* фон: до финала мастерская своей эпохи, в финале стол под время суток */
+    if (t >= T.bgHome[0]) {
+      S.bgA = eraBg(3);
+      S.bgB = homeBg();
+      S.bgMix = ease(seg(t, T.bgHome));
+    }
     S.dark = 1 - ease(seg(t, T.dark));
     S.zoom = lerp(1.1, 1.03, easeOut(clamp(t / DUR, 0, 1))) + .06 * zk;
     S.off = [mouse.x * -0.006, mouse.y * -0.005];
@@ -200,10 +214,32 @@ export function createIntro({ stage, url, homeBg, layout, els, onEnd, onPeek }) 
     /* сумка */
     const B = S.bag;
     B.on = true; B.rect = r; B.useMask = 0; B.tear = 0; B.repair = 0; B.mix = 0; B.seed = 0;
-    let ia = -1, ib = 0, mk = 0;
+    let ia = -1, ib = 0, mk = 0, fly = -1;
     for (const m of MORPH) {
-      if (t >= m[0]) { ia = m[2]; ib = m[3]; mk = seg(t, [m[0], m[1]]); }
+      if (CLOTH && m[2] >= 0) {
+        /* ткань летит чуть дольше перехода; сумка меняется, когда ткань её закрывает */
+        const p = seg(t, [m[0] - .3, m[1] + .3]);
+        if (t >= m[0] - .3) { ia = m[2]; ib = m[3]; mk = ease(clamp((p - .42) / .16, 0, 1)); fly = p; }
+      } else if (t >= m[0]) { ia = m[2]; ib = m[3]; mk = seg(t, [m[0], m[1]]); fly = -1; }
     }
+    if (fly >= 1) fly = -1;
+
+    if (t < T.bgHome[0]) {
+      S.bgA = eraBg(ia < 0 ? 0 : ia);
+      S.bgB = eraBg(ib);
+      if (!S.bgB.ready) S.bgB = S.bgA;
+      S.bgMix = ease(mk);
+    }
+    /* луч света над столом, цвет по эпохе */
+    const lk = stage.tex(url('preview/bg/light-key', 'bg'));
+    const ca = ERA_LIGHT[eraOf(ia < 0 ? 0 : ia)], cb = ERA_LIGHT[eraOf(ib)], em = ease(mk);
+    const lcol = [lerp(ca[0], cb[0], em), lerp(ca[1], cb[1], em), lerp(ca[2], cb[2], em)];
+    const la = (.26 + .05 * Math.sin(t * 1.7) * Math.sin(t * .63)) * (1 - ease(seg(t, T.bgHome)));
+    const lsh = [Math.sin(t * .35) * .008, 0];
+    S.lights = [
+      { tex: lk, alpha: la, col: lcol, shift: lsh },
+      { tex: lk, alpha: la * .45, col: lcol, shift: lsh, over: true }
+    ];
     const ready = i => i >= 0 && bags[i] && bags[i].ready;
     if (mk >= 1 || !ready(ib)) { ia = ready(ib) ? ib : ia; mk = 0; }
     B.a = ia >= 0 && ready(ia) ? bags[ia] : stage.blank;
@@ -211,6 +247,28 @@ export function createIntro({ stage, url, homeBg, layout, els, onEnd, onPeek }) 
     B.mix = ease(mk);
     B.seed = ib * 1.7;
     B.edgeW = ia < 0 ? .08 : .05;
+
+    /* летящая ткань: проходит через кадр и на миг закрывает сумку */
+    S.top = [];
+    if (CLOTH && fly >= 0 && cloth[0] && cloth[0].ready) {
+      const cw = r.w * 2.1, ch = cw * 2000 / 3000;
+      const bx = r.x + r.w / 2, by = r.y + r.h * .58;
+      const reach = Math.max(bx, W - bx) + cw * .55;
+      const cx = bx + (fly - .5) * 2 * reach;
+      const cy = by - Math.sin(fly * Math.PI) * r.h * .06 + (fly - .5) * r.h * .12;
+      const ang = (fly - .5) * -.3 + Math.sin(t * 9) * .03;
+      const m = [Math.cos(ang), Math.sin(ang), -Math.sin(ang), Math.cos(ang)];
+      const rect = { x: cx - cw / 2, y: cy - ch / 2, w: cw, h: ch };
+      const sh = { x: rect.x + r.w * .05, y: rect.y + r.h * .1, w: cw, h: ch };
+      const k1 = fly >= .58 ? 1 : 0;
+      const wob = [.012, 8, 1, 0];
+      const tint = [lerp(.9, lcol[0] * .9, .3), lerp(.86, lcol[1] * .9, .3), lerp(.82, lcol[2] * .9, .3)];
+      [[cloth[0], 1 - ease(clamp((fly - .58) / .14, 0, 1))], [cloth[1], k1]].forEach(([tx, a]) => {
+        if (!tx || !tx.ready || a <= 0) return;
+        S.top.push({ k: 'img', tex: tx, rect: sh, m, piv: [sh.x + cw / 2, sh.y + ch / 2], tint: [0, 0, 0], alpha: .28 * a, wob });
+        S.top.push({ k: 'img', tex: tx, rect, m, piv: [cx, cy], tint, alpha: a, wob });
+      });
+    }
 
     let repairDone = false;
     if (t >= MORPH[3][1] && ready(3)) {
@@ -358,6 +416,7 @@ export function createIntro({ stage, url, homeBg, layout, els, onEnd, onPeek }) 
         running = false;
         els.root.hidden = true;
         S.bag.on = false;
+        S.top = [];
         document.body.classList.remove('in-intro');
         els.home.style.opacity = els.top.style.opacity = '';
         onEnd();

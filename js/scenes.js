@@ -17,11 +17,12 @@ export const META = {
   'morning/cup-saucer': M(1400, 1208),
   'morning/spoon': M(1400, 941),
   'morning/croissant-napkin': M(1400, 1010),
-  'morning/notebook-pencil': M(1400, 1216),
+  'morning/notebook-pencil-34': M(1400, 319),
   'morning/glasses': M(1400, 553),
-  'morning/vase-twig': M(623, 1400),
+  'morning/vase-ceramic': M(1399, 1327),
   'morning/fabric-folded': M(1400, 1094),
-  'work/sewing-machine': M(1379, 1400),
+  'work/sewing-machine-base': M(1379, 1400),
+  'work/sewing-machine-needlebar': M(1379, 1400),
   'work/sewing-machine-wheel': M(1400, 1400),
   'work/lamp': M(1311, 1400),
   'work/tape-hanging': M(800, 1600, [220 / 800, 0, 503 / 800, 1500 / 1600]),
@@ -51,7 +52,14 @@ export const META = {
 
 /* точки на картинках (доли размера исходника) */
 export const PTS = {
-  wheel: [0.872, 0.30],          // торец машинки, где стоит маховик
+  wheel: [1228 / 1379, 462 / 1400], // конец вала в углублении на торце машинки
+  wheelD: 330 / 1400,              // высота маховика (доля высоты картинки машинки)
+  wheelSx: .52,                    // ширина/высота овала углубления: так видно круг сбоку
+  /* игла: стержень выходит из корпуса на y = 626, лапка закрывает иглу ниже y = 856,
+     ход вниз 40 пикселей (из ANCHORS.json второй партии Codex) */
+  needleBar: [319 / 1379, 626 / 1400, 361 / 1379, 853 / 1400],
+  needleFoot: 856 / 1400,
+  needleStroke: 40 / 1400,
   lampBulb: [0.29, 0.40],        // лампочка в абажуре
   lampElbow: [0.915, 0.305],     // верхний шарнир лампы, на нём висит сантиметр
   cupRim: [0.47, 0.17],          // середина кофе в чашке
@@ -65,16 +73,16 @@ export const SCENES = {
     dust: { amt: .95, col: [1, .86, .6] },
     tint: [.95, .86, .76],
     desk: [
-      { id: 'morning/vase-twig', at: [.905, .715], h: .30, sway: 1 },
+      { id: 'morning/vase-ceramic', at: [.905, .735], h: .2, sway: 1 },
       { id: 'morning/fabric-folded', at: [.79, .725], h: .12 },
       { id: 'morning/croissant-napkin', at: [.745, .835], h: .13, flatSh: 1 },
       { id: 'morning/cup-saucer', at: [.615, .865], h: .165, steam: 1 },
       { id: 'morning/spoon', at: [.69, .875], w: .11, flat: .5, rot: -18 },
-      { id: 'morning/notebook-pencil', at: [.855, .865], w: .25, flat: .48, rot: 5 },
+      { id: 'morning/notebook-pencil-34', at: [.835, .91], w: .36 },
       { id: 'morning/glasses', at: [.53, .89], w: .14, flat: .65, rot: -7 }
     ],
     mob: [
-      { id: 'morning/vase-twig', at: [.825, .725], h: .2, sway: 1 },
+      { id: 'morning/vase-ceramic', at: [.83, .74], h: .155, sway: 1 },
       { id: 'morning/croissant-napkin', at: [.775, .84], h: .11, flatSh: 1 },
       { id: 'morning/cup-saucer', at: [.665, .87], h: .14, steam: 1 },
       { id: 'morning/glasses', at: [.72, .925], w: .1, flat: .65, rot: -7 }
@@ -86,7 +94,7 @@ export const SCENES = {
     desk: [
       { id: 'work/lamp', at: [.875, .705], h: .42, lamp: 1 },
       { id: 'work/spool-graphite', at: [.585, .715], h: .075 },
-      { id: 'work/sewing-machine', at: [.70, .725], h: .30, machine: 1 },
+      { id: 'work/sewing-machine-base', at: [.70, .725], h: .30, machine: 1 },
       { id: 'work/spool-red', at: [.835, .775], h: .09 },
       { id: 'work/spool-olive', at: [.868, .762], h: .085 },
       { id: 'work/spool-linen', at: [.905, .79], h: .085 },
@@ -100,7 +108,7 @@ export const SCENES = {
       { id: 'work/hardware-scatter', at: [.83, .935], w: .12, flat: .5 }
     ],
     mob: [
-      { id: 'work/sewing-machine', at: [.705, .745], h: .215, machine: 1 },
+      { id: 'work/sewing-machine-base', at: [.705, .745], h: .215, machine: 1 },
       { id: 'work/spool-red', at: [.815, .78], h: .075 },
       { id: 'work/spool-olive', at: [.84, .765], h: .07 },
       { id: 'work/pincushion', at: [.63, .84], h: .085 },

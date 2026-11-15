@@ -43,3 +43,7 @@ export const SITE = {
 
 // Версия превью. Если поменять, превью снова покажется всем один раз.
 export const INTRO_VERSION = '1';
+
+// Переход между эпохами в превью: 'dissolve' (сумка растворяется по шуму)
+// или 'cloth' (через кадр пролетает льняная ткань). Для сравнения: ?tr=cloth
+export const INTRO_TRANSITION = 'dissolve';

@@ -131,7 +131,10 @@ export function createHome({ stage, site, url, forced, els, calm }) {
         it.tex = img(d.id);
         it.meta = META[d.id];
       }
-      if (d.machine) it.wheelTex = img('work/sewing-machine-wheel');
+      if (d.machine) {
+        it.wheelTex = img('work/sewing-machine-wheel');
+        it.barTex = img('work/sewing-machine-needlebar');
+      }
       if (d.lamp) it.tapeTex = img('work/tape-hanging');
       if (d.candle) it.flameTex = img('closed/candle-flame');
       return it;
@@ -140,8 +143,10 @@ export function createHome({ stage, site, url, forced, els, calm }) {
     list.sort((a, b) => a.at[1] - b.at[1]);
     const lightTex = m === 'morning' ? stage.tex(url('home/morning/light-window', 'bg'))
       : m === 'work' ? stage.tex(url('home/work/light-lamp', 'bg')) : null;
+    const lightTex2 = m === 'morning' ? stage.tex(url('home/morning/light-leaves', 'bg'))
+      : m === 'closed' ? stage.tex(url('home/closed/light-moon', 'bg')) : null;
     return {
-      mode: m, mob, def, list, lightTex, t: 0, fade: 0,
+      mode: m, mob, def, list, lightTex, lightTex2, t: 0, fade: 0,
       wheel: { a: 0, v: 0 }, tape: { a: .05, v: 0 }, flame: { lean: 0, f: 1 }
     };
   }
@@ -241,17 +246,34 @@ export function createHome({ stage, site, url, forced, els, calm }) {
       }
 
       const o = Object.assign({}, base, { k: 'img', tex: it.tex, rect: pl.rect, piv: pl.piv, m });
-      if (it.sway) o.wob = [.006, 1.1, 0, .5];
+      if (it.sway) o.wob = [.006, 1.1, 0, .55];
       objs.push(o);
 
       if (it.machine) {
-        /* маховик на торце: круг сжат по ширине, будто смотрим сбоку */
-        const c = ptOn(pl.rect, pl.piv, m, PTS.wheel);
+        const r = pl.rect;
+        const sub = q => ({ x: r.x + q[0] * r.w, y: r.y + q[1] * r.h, w: (q[2] - q[0]) * r.w, h: (q[3] - q[1]) * r.h });
+
+        /* игла: ход вниз по косинусу от угла маховика, один стежок на оборот */
+        const nb = PTS.needleBar;
+        const off = PTS.needleStroke * (1 - Math.cos(sc.wheel.a)) / 2;
+        const offPx = off * r.h;
+        if (offPx > .3) {
+          /* стержень продолжается из корпуса, чтобы при опускании не было щели */
+          const ext = sub([nb[0], nb[1], nb[2], nb[1] + .008]);
+          ext.h = offPx + 1;
+          objs.push(Object.assign({}, base, { k: 'img', tex: it.barTex, rect: ext, piv: [ext.x, ext.y], uvr: [nb[0], nb[1], nb[2], nb[1] + .008] }));
+        }
+        objs.push(Object.assign({}, base, {
+          k: 'img', tex: it.barTex, rect: { x: r.x, y: r.y + offPx, w: r.w, h: r.h }, piv: pl.piv,
+          clipY: PTS.needleFoot - off
+        }));
+
+        /* маховик в углублении на торце: круг, сжатый по ширине как овал углубления */
+        const c = ptOn(r, pl.piv, m, PTS.wheel);
         const wm = META['work/sewing-machine-wheel'];
-        const D = pl.rect.h * .29;
-        const rh = D / (wm.box[3] - wm.box[1]);
+        const rh = PTS.wheelD * r.h / (wm.box[3] - wm.box[1]);
         const wr = { x: c[0] - rh / 2, y: c[1] - rh / 2, w: rh, h: rh };
-        const wmx = mul(rot(-4 * RAD), mul(scl(.36, 1), rot(sc.wheel.a)));
+        const wmx = mul(scl(PTS.wheelSx, 1), rot(sc.wheel.a));
         objs.push(Object.assign({}, base, { k: 'img', tex: it.wheelTex, rect: wr, piv: c, m: wmx }));
       }
 
@@ -332,7 +354,7 @@ export function createHome({ stage, site, url, forced, els, calm }) {
     if (sc.lightTex) {
       let a, shift, col;
       if (sc.mode === 'morning') {
-        const mins = (nowCache.h * 60 + nowCache.m - 360) / 240;
+        const mins = (nowCache.h * 60 + nowCache.m - site.morningFrom * 60) / 180;
         shift = [-.02 + clamp(mins, 0, 1) * .04 + Math.sin(time * .02) * .012, Math.sin(time * .015) * .006];
         const cloud = .82 + .18 * (Math.sin(time * .11) * .5 + Math.sin(time * .047 + 2) * .5);
         a = .3 * cloud; col = [1, .78, .5];
@@ -343,6 +365,18 @@ export function createHome({ stage, site, url, forced, els, calm }) {
       const k = smooth(sc.t / 1.2) * appear;
       lights.push({ tex: sc.lightTex, alpha: a * k, col, shift, over: false });
       lights.push({ tex: sc.lightTex, alpha: a * .45 * k, col, shift, over: true });
+    }
+    /* второй слой: утром листва за окном колышется, ночью слабый холодный свет из окна */
+    if (sc.lightTex2) {
+      const k = smooth(sc.t / 1.6) * appear;
+      if (sc.mode === 'morning') {
+        const gust = .7 + .3 * Math.sin(time * .23) * Math.sin(time * .09 + 1);
+        const L = { tex: sc.lightTex2, alpha: .26 * k * gust, col: [1, .84, .58], shift: [Math.sin(time * .05) * .004, 0], wave: .0016 * (1 + gust) };
+        lights.push(L, Object.assign({}, L, { alpha: L.alpha * .4, over: true }));
+      } else {
+        const L = { tex: sc.lightTex2, alpha: .5 * k * (.9 + .1 * Math.sin(time * .17)), col: [.55, .68, 1], shift: [0, 0] };
+        lights.push(L, Object.assign({}, L, { alpha: L.alpha * .35, over: true }));
+      }
     }
 
     items.push(...shadows, ...objs, ...glows);

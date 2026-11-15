@@ -1,4 +1,4 @@
-import { SITE, INTRO_VERSION } from './config.js';
+import { SITE, INTRO_VERSION, INTRO_TRANSITION } from './config.js';
 import { createStage } from './stage.js';
 import { createIntro } from './intro.js';
 import { createHome } from './home.js';
@@ -109,6 +109,7 @@ function markSeen() { try { localStorage.setItem(KEY, INTRO_VERSION); } catch (e
 
 const intro = stage ? createIntro({
   stage, url, layout, els,
+  transition: Q.get('tr') || INTRO_TRANSITION,
   homeBg: () => home.bg(),
   onEnd() { markSeen(); home.activate(true); },
   onPeek() { home.peek(); }
