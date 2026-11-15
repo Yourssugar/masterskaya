@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Было и стало. Мастерская на Есенина</title>
+<meta name="description" content="Работы мастерской до ремонта и после: сумки, чемоданы, рюкзаки, ремни.">
+<meta name="theme-color" content="#0e0c0b">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/site.css">
+<link rel="stylesheet" href="css/works.css">
+</head>
+<body class="page">
+
+<div id="pagebg" class="pagebg" aria-hidden="true"></div>
+
+<header id="top" class="top">
+  <div class="top-left">
+    <a class="map-mini" data-map href="https://www.google.com/maps" target="_blank" rel="noopener" aria-label="Маршрут до мастерской в Google Картах">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <rect width="48" height="48" rx="11" fill="#d9cdb7"/>
+        <rect x="29" y="3" width="16" height="11" rx="2.5" fill="#b4c399"/>
+        <path d="M-2 31c12-5 20 5 52-6" stroke="#9db1bd" stroke-width="5.5" fill="none"/>
+        <path d="M0 13h48M15 0v48M0 41l48-4M33 0l5 48" stroke="#f4ede1" stroke-width="2.4" fill="none"/>
+        <path d="M24 8.5c-5.1 0-8.7 3.7-8.7 8.5 0 6.3 8.7 15 8.7 15s8.7-8.7 8.7-15c0-4.8-3.6-8.5-8.7-8.5z" fill="#b8325a" stroke="#fff" stroke-width="1.6"/>
+        <circle cx="24" cy="17" r="3.1" fill="#fff"/>
+      </svg>
+    </a>
+    <a class="brand" href="./">
+      <span class="brand-name" data-site="name">Мастерская</span>
+      <span class="brand-place" data-site="place">на Есенина</span>
+    </a>
+  </div>
+  <nav class="top-actions">
+    <a class="top-link" href="works.html" aria-current="page">Было и стало</a>
+    <div class="top-contact">
+      <a class="top-phone" data-tel href="tel:+375296758793" data-site="phone">+375 29 675-87-93</a>
+      <span class="top-hours" data-contact-short>10:00-20:00, кроме воскресенья</span>
+    </div>
+  </nav>
+</header>
+
+<main class="works">
+  <section class="game-wrap">
+    <h1>Было и стало</h1>
+    <p class="lead">Настоящие работы мастера. Нажмите «Отремонтировать» и посмотрите, что получилось.</p>
+
+    <div class="game" id="game">
+      <figure class="frame" id="g-frame">
+        <img id="g-photo" alt="">
+        <span class="tag" id="g-tag">Было</span>
+        <span class="demo-tag" id="g-demo" hidden>пример</span>
+      </figure>
+      <canvas class="fx" id="g-fx" aria-hidden="true"></canvas>
+    </div>
+    <p class="g-cap" id="g-cap" aria-live="polite"></p>
+    <div class="g-actions">
+      <button class="btn big" id="g-go" type="button">Отремонтировать</button>
+      <button class="btn-ghost big" id="g-next" type="button" hidden>Ещё одна работа</button>
+    </div>
+  </section>
+
+  <section class="gallery-wrap">
+    <h2>Все работы</h2>
+    <p class="sub">Потяните за ручку посередине, чтобы сравнить до и после.</p>
+    <div class="gallery" id="gallery"></div>
+  </section>
+
+  <section class="cta">
+    <h2>Что-то сломалось?</h2>
+    <p>Пришлите фото поломки в Viber или Telegram, мастер скажет, можно ли починить и сколько это будет стоить.</p>
+    <div class="actions">
+      <a class="btn" data-telegram href="#">Telegram</a>
+      <a class="btn-ghost" data-viber href="#">Viber</a>
+      <a class="btn-ghost" data-tel href="tel:+375296758793">Позвонить</a>
+    </div>
+    <p class="addr"><a data-map href="#" target="_blank" rel="noopener"><span data-site="city">Минск</span>, <span data-site="address">ул. С. Есенина, 121, 2 этаж</span></a></p>
+  </section>
+</main>
+
+<div id="pop" class="pop" role="dialog" aria-modal="false" aria-labelledby="pop-title" hidden>
+  <p id="pop-title" class="pop-title">Сейчас мастер не на связи</p>
+  <p class="pop-text">Звонить и писать можно <span data-contact>с 10:00 до 20:00, кроме воскресенья</span>. <span id="pop-next"></span></p>
+  <div class="pop-actions">
+    <a id="pop-go" class="btn" href="#">Всё равно написать</a>
+    <button id="pop-close" class="btn-ghost" type="button">Понятно</button>
+  </div>
+</div>
+
+<script type="module" src="js/works.js"></script>
+</body>
+</html>

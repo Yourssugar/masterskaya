@@ -1,0 +1,10 @@
+[
+  {
+    "id": "demo-1",
+    "before": "works/img/demo-1-before",
+    "after": "works/img/demo-1-after",
+    "title": "Разошлась молния, надорван угол",
+    "date": "2026-11-15",
+    "demo": true
+  }
+]

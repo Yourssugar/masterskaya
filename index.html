@@ -19,16 +19,29 @@
 <div class="shade" aria-hidden="true"></div>
 
 <header id="top" class="top">
-  <a class="brand" href="./">
-    <span class="brand-name" data-site="name">Мастерская</span>
-    <span class="brand-place" data-site="place">на Есенина</span>
-  </a>
+  <div class="top-left">
+    <a class="map-mini" data-map href="https://www.google.com/maps" target="_blank" rel="noopener" aria-label="Маршрут до мастерской в Google Картах">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <rect width="48" height="48" rx="11" fill="#d9cdb7"/>
+        <rect x="29" y="3" width="16" height="11" rx="2.5" fill="#b4c399"/>
+        <path d="M-2 31c12-5 20 5 52-6" stroke="#9db1bd" stroke-width="5.5" fill="none"/>
+        <path d="M0 13h48M15 0v48M0 41l48-4M33 0l5 48" stroke="#f4ede1" stroke-width="2.4" fill="none"/>
+        <path d="M24 8.5c-5.1 0-8.7 3.7-8.7 8.5 0 6.3 8.7 15 8.7 15s8.7-8.7 8.7-15c0-4.8-3.6-8.5-8.7-8.5z" fill="#b8325a" stroke="#fff" stroke-width="1.6"/>
+        <circle cx="24" cy="17" r="3.1" fill="#fff"/>
+      </svg>
+    </a>
+    <a class="brand" href="./">
+      <span class="brand-name" data-site="name">Мастерская</span>
+      <span class="brand-place" data-site="place">на Есенина</span>
+    </a>
+  </div>
   <nav class="top-actions">
+    <a class="top-link" href="works.html">Было и стало</a>
     <div class="top-contact">
       <a class="top-phone" data-tel href="tel:+375296758793" data-site="phone">+375 29 675-87-93</a>
       <span class="top-hours" data-contact-short>10:00-20:00, кроме воскресенья</span>
     </div>
-    <button id="replay" class="btn-ghost" type="button">Превью</button>
+    <button id="replay" class="btn-ghost replay" type="button" aria-label="Превью"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg><span>Превью</span></button>
   </nav>
 </header>
 
