@@ -24,7 +24,10 @@
     <span class="brand-place" data-site="place">на Есенина</span>
   </a>
   <nav class="top-actions">
-    <a class="top-phone" data-tel href="tel:+375296758793" data-site="phone">+375 29 675-87-93</a>
+    <div class="top-contact">
+      <a class="top-phone" data-tel href="tel:+375296758793" data-site="phone">+375 29 675-87-93</a>
+      <span class="top-hours" data-contact-short>10:00-20:00, кроме воскресенья</span>
+    </div>
     <button id="replay" class="btn-ghost" type="button">Превью</button>
   </nav>
 </header>
@@ -58,6 +61,15 @@
   </div>
   <div class="bar"><i id="bar"></i></div>
   <button id="skip" class="btn-ghost skip" type="button">Пропустить</button>
+</div>
+
+<div id="pop" class="pop" role="dialog" aria-modal="false" aria-labelledby="pop-title" hidden>
+  <p id="pop-title" class="pop-title">Сейчас мастер не на связи</p>
+  <p class="pop-text">Звонить и писать можно <span data-contact>с 10:00 до 20:00, кроме воскресенья</span>. <span id="pop-next"></span></p>
+  <div class="pop-actions">
+    <a id="pop-go" class="btn" href="#">Всё равно написать</a>
+    <button id="pop-close" class="btn-ghost" type="button">Понятно</button>
+  </div>
 </div>
 
 <div id="loader" aria-hidden="true"><i></i></div>

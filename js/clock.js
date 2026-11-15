@@ -43,3 +43,38 @@ export function shopStatus(site, now = shopNow(site.timeZone)) {
   }
   return { mode: 'closed', open: false, text: 'Сейчас закрыто' };
 }
+
+/* ---------- когда можно звонить и писать ---------- */
+const EXCEPT = ['воскресенья', 'понедельника', 'вторника', 'среды', 'четверга', 'пятницы', 'субботы'];
+
+/* "с 10:00 до 20:00, кроме воскресенья" из таблицы как у hours,
+   short: "10:00-20:00, кроме воскресенья" для шапки */
+export function contactText(table, short) {
+  const on = [0, 1, 2, 3, 4, 5, 6].filter(d => table[d]);
+  const off = [1, 2, 3, 4, 5, 6, 0].filter(d => !table[d]);
+  const same = on.every(d => table[d][0] === table[on[0]][0] && table[d][1] === table[on[0]][1]);
+  if (!on.length) return '';
+  if (!same) {
+    const SH = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+    return [1, 2, 3, 4, 5, 6, 0].filter(d => table[d])
+      .map(d => SH[d] + ' ' + fmtHour(table[d][0]) + '-' + fmtHour(table[d][1])).join(', ');
+  }
+  const h = table[on[0]];
+  let t = short ? fmtHour(h[0]) + '-' + fmtHour(h[1]) : 'с ' + fmtHour(h[0]) + ' до ' + fmtHour(h[1]);
+  if (off.length) t += ', кроме ' + off.map(d => EXCEPT[d]).join(' и ');
+  return t;
+}
+
+/* ok: мастер сейчас на связи; next: когда ответит, если нет */
+export function contactStatus(site, now = shopNow(site.timeZone)) {
+  const table = site.contact || site.hours;
+  const today = table[now.dow];
+  if (today && now.hours >= today[0] && now.hours < today[1]) return { ok: true, next: '' };
+  if (today && now.hours < today[0]) return { ok: false, next: 'сегодня после ' + fmtHour(today[0]) };
+  for (let d = 1; d <= 7; d++) {
+    const dow = (now.dow + d) % 7, h = table[dow];
+    if (!h) continue;
+    return { ok: false, next: (d === 1 ? 'завтра' : ON_DAY[dow]) + ' после ' + fmtHour(h[0]) };
+  }
+  return { ok: false, next: '' };
+}
